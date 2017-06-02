@@ -1,0 +1,168 @@
+% ========================================================================%
+% Trabalho de conclusão de curso - Engenharia de Computação               %
+% Universidade Tecnológica Federal do Paraná                              %
+% Extração automática de fônemas vocálicos em sinais de áudio             %
+%                                                                         %
+% Arquivo principal o qual le um arquivo no formato wav e grava todas as  %
+% vogais \a\ encontradas                                                  %
+%                                                                         %   
+% ========================================================================%
+
+clc
+clear all
+close all
+
+% Adiciona as pastas necessárias que contém arquivos de funções utilizadas
+% ao caminho do matlab
+voiceboxpath = genpath('voicebox');
+featureextractionpath = genpath('featureExtraction');
+utilpath = genpath('util');
+trainingandneuralnetworktoolspath = genpath('trainingAndNeuralNetworkTools');
+outputpath = genpath('output');
+trainingpath = genpath('training');
+addpath(voiceboxpath,featureextractionpath,utilpath,trainingandneuralnetworktoolspath,outputpath,trainingpath);
+
+disp('carregando arquivo de áudio...')
+% carrega o áudio para extrair as vogais \a\ 
+filetoextract = 'frase4.wav';
+[y,Fs] = audioread(filetoextract);
+
+disp('áudio carregado. Segmentando o sinal em frames de 20ms sem overlap');
+% segmenta o áudio em frames sem overlaping de 50ms
+framelength = floor(Fs*0.02);
+overlap = floor(framelength/2);
+%yframed = enframe(y,framelength,overlap);
+yframed = enframe(y,framelength);
+
+% estrutura de célula para guardar a referência de quais frames são vogais
+vogaisref = cell(1,size(yframed,1));
+
+% carrega a rede neural treinada para usar na classificação
+load nettr21;
+
+i = 1;
+p = 2;
+teste = y(30*framelength:40*framelength);
+% plot(teste)
+% sound(teste,Fs)
+[id,z] = vadsohn(teste,Fs,'n');
+cep = extractmfcc(teste,Fs);
+%cep = mapminmax(cep);
+res = nettr(cep');
+disp('----------------------')
+
+disp('iniciando a rotina de busca por vogais a no sinal de áudio');
+%calcula o total de frames a partir dos frames gerados
+totalframes = size(yframed,1);
+% começa a iteração nos frames para análise e classificação
+while i<totalframes
+    % extrai o frame atual para análise
+    frame = y(i*framelength:p*framelength);
+    
+    % extrai o mfcc do trecho
+    ceps = extractmfcc(frame,Fs);
+    %ceps = mapminmax(ceps);
+    
+    % joga os coeficientes para a rede e pega sua saída referente a vogal
+    % a, no caso a primeira linha das 7 saídas
+    saida = nettr(ceps');
+    saidaa = max(saida);
+    
+    
+    % verifica se a saída representa um a    
+    if saidaa >=0.9
+        disp('to aqui')
+        % agora começa uma sub verificação, para ver até onde o a se
+        % extende
+        curr = i + 1;
+        pos = curr + 1;
+        flag = 1;
+        while(flag && curr<=totalframes)  
+%             frameaux = yframed(curr,:);
+            frameaux = y(curr*framelength:pos*framelength);
+            cepsaux = extractmfcc(frameaux,Fs);
+%             cepsaux = mapminmax(cepsaux);
+            saidaaux = nettr(cepsaux');            
+            saidaauxa = max(saidaaux);    
+            if saidaauxa >= 0.9
+                disp('não tem como eu não ta aqui')
+                flag = 1;
+                curr = curr + 1;
+                pos = curr+1;
+            else
+                disp('porra')
+                flag = 0;
+                flag2 =1;
+                acumulador = [];
+                %verificar essa linha
+                k = i+1;
+                while k < curr
+                    low = k
+                    acumular = yframed(k,overlap+1:end);
+                    low = k;
+                    high = k+1;
+                    acumular = y(low*framelength:high*framelength);
+                    acumulador = cat(1,acumulador,acumular);                    
+                    k = k + 1;
+                end
+                i = curr - 1;
+            end
+        end
+        
+        % se encontrou a a flag 2 estará true
+        if flag2
+            % se o trecho de a for significante, isto é, ter pelo menos
+            % tamanho superior a 40ms
+            if length(acumulador)>=2*framelength
+                disp('achei um a')                
+                saveaudiofile(acumulador,Fs);
+            end
+            flag2 = 0;
+        end
+       
+        
+    end
+    i = i + 1;
+    p = i + 1;
+
+end
+
+
+% pós-processa os áudios encontrados para filtrar ainda mais o que
+% representa a vogal a
+
+%files = getAllFiles('output','*.wav',0);
+
+% for it=1:size(files,1)
+%     % le o arquivo
+%     [filep,name,ext] = fileparts(strjoin(files(it)));
+%     [sig,freq] = audioread(strcat(filep,'\',name,ext));
+%     % faz-se a segmentação do áudio em frames de 20ms com overlap de 10ms
+%     sigframe = enframe(sig,framelength,overlap);
+%     resultscell = cell(1,size(sigframe,1));
+%     
+%     for cont=1:size(sigframe,1)
+%         analysis = sigframe(cont,:);
+%         cepssig = extractmfcc(analysis(:),freq);
+%         resultscell{cont} = nettr(cepssig');
+%     
+%     end
+%     
+%     vogaisa = zeros(1,size(resultscell,2));
+%     % itera nos resultados
+%     for k=1:size(resultscell,2)
+%         resultmat = cell2mat(resultscell(k));
+%         resultmata = resultmat(1,:);
+%         resultfinal = max(resultmata(:))
+%         if resultfinal > 0.9
+%             vogaisa(k) = 1;
+%         end
+%     end
+%     
+%     
+%     
+%     
+%     
+%     
+% end
+% 
