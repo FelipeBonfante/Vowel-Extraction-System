@@ -35,58 +35,12 @@
 % ohmfccmatrix = cell2mat(ohmfcc(1:end));
 % umfccmatrix = cell2mat(umfcc(1:end));
 % 
-% %gera os modelos de gmm 
-% % agmmmodel = fitgmdist(amfccmatrix,13,'RegularizationValue',1e-5);
-% % egmmmodel = fitgmdist(emfccmatrix,13,'RegularizationValue',1e-5);
-% % ehgmmmodel = fitgmdist(ehmfccmatrix,13,'RegularizationValue',1e-5);
-% % igmmmodel = fitgmdist(imfccmatrix,13,'RegularizationValue',1e-5);
-% % ogmmmodel = fitgmdist(omfccmatrix,13,'RegularizationValue',1e-5);
-% % ohgmmmodel = fitgmdist(ohmfccmatrix,13,'RegularizationValue',1e-5);
-% % ugmmmodel = fitgmdist(umfccmatrix,13,'RegularizationValue',1e-5);
-% 
-% 
-% % [pa,loga]=posterior(agmmmodel,ceps);
-% % [pe,loge]=posterior(egmmmodel,ceps);
-% % [peh,logeh]=posterior(ehgmmmodel,ceps);
-% % [pi,logi]=posterior(igmmmodel,ceps);
-% % [po,logo]=posterior(ogmmmodel,ceps);
-% % [poh,logoh]=posterior(ohgmmmodel,ceps);
-% % [pu,logu]=posterior(ugmmmodel,ceps);
 % 
 % %treinando rna
 % 
 % %cria o vetor de treino e o targets
 % totaldata=[amfccmatrix;emfccmatrix;ehmfccmatrix;imfccmatrix;omfccmatrix;ohmfccmatrix;umfccmatrix];
-% % targets=zeros(7,size(totaldata,1));
-% % targets(1,1:size(amfccmatrix,1))=1;
-% % targets(2,size(amfccmatrix,1)+1:size(emfccmatrix,1)) = 1;
-% % targets(3,size(emfccmatrix,1)+1:size(ehmfccmatrix,1)) = 1;
-% % targets(4,size(ehmfccmatrix,1)+1:size(imfccmatrix,1)) = 1;
-% % targets(5,size(imfccmatrix,1)+1:size(omfccmatrix,1)) = 1;
-% % targets(6,size(omfccmatrix,1)+1:size(ohmfccmatrix,1)) = 1;
-% % targets(7,size(ohmfccmatrix,1)+1:size(umfccmatrix,1)) = 1;
 % 
-% targetsa = zeros(1,size(totaldata,1));
-% targetsa(1:size(amfccmatrix,1)) = 1;
-% fimanterior = size(amfccmatrix,1)+1;
-% targetse = zeros(1,size(totaldata,1));
-% targetse(fimanterior:fimanterior+size(emfccmatrix,1)) = 1;
-% fimanterior = fimanterior + size(emfccmatrix,1)+1;
-% targetseh = zeros(1,size(totaldata,1));
-% targetseh(fimanterior:fimanterior+size(ehmfccmatrix,1)) = 1;
-% fimanterior = fimanterior+size(ehmfccmatrix,1)+1;
-% targetsi = zeros(1,size(totaldata,1));
-% targetsi(fimanterior:fimanterior+size(imfccmatrix,1)) = 1;
-% fimanterior = fimanterior+size(imfccmatrix,1)+1;
-% targetso = zeros(1,size(totaldata,1));
-% targetso(fimanterior:fimanterior+size(omfccmatrix,1)) = 1;
-% fimanterior = fimanterior+size(omfccmatrix,1)+1;
-% targetsoh = zeros(1,size(totaldata,1));
-% targetsoh(fimanterior:fimanterior+size(ohmfccmatrix,1)) = 1;
-% fimanterior = fimanterior+size(ohmfccmatrix,1)+1;
-% targetsu = zeros(1,size(totaldata,1));
-% targetsu(fimanterior:end) = 1;
-% fimanterior = fimanterior+size(umfccmatrix,1)+1;
 % 
 % targets = zeros(1,size(totaldata,1));
 % targets(1:size(amfccmatrix,1)) = 1;
@@ -119,10 +73,6 @@
 % perfs = zeros(1, numNN);
 % perfs2 = zeros(1,numNN);
 % 
-% % x1gpu = nndata2gpu(x1);
-% % t1gpu = nndata2gpu(t1);
-% % x2gpu = nndata2gpu(x2);
-% % t2gpu = nndata2gpu(t2);
 % 
 % % svmmodel = fitcsvm(x1',t1','KernelFunction','gaussian','Standardize',true,'ClassNames',[-1,1]);
 % % svmmodelval = crossval(svmmodel)
@@ -133,12 +83,11 @@
 % for i = 1:numNN
 %   fprintf('Training %d/%d\n', i, numNN);
 %   NN{i} = train(net,x1,t1,'useGPU','yes','showResources','yes');
-%   %NN{i} = train(net,totaldata,targets,'useGPU','yes','showResources','yes');
 %   y2 = NN{i}(x2);
 %   perfs(i) = mse(net, t2, y2);
 %   perfs2(i) = perform(net,y2,t2);
 % end
 
 
-nettr = NN{2};
-save ('nettr22.mat','nettr');
+% nettr = NN{2};
+% save ('nettr22.mat','nettr');
